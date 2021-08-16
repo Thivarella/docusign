@@ -4,6 +4,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
+import java.text.Normalizer;
 
 public class FileUtils {
     /**
@@ -16,5 +17,9 @@ public class FileUtils {
     public static byte[] readFile(String path) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);
         return StreamUtils.copyToByteArray(resource.getInputStream());
+    }
+
+    public static String removerAcentos(String str) {
+        return Normalizer.normalize(str, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
     }
 }

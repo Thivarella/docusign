@@ -75,6 +75,5 @@ public final class Languages {
     public static class Lang {
         private String code;
         private String name;
-
     }
 }

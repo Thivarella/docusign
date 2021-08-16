@@ -1,5 +1,6 @@
 package br.com.copernico.docusign.common;
 
+import br.com.copernico.docusign.core.utils.FileUtils;
 import lombok.Data;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -43,4 +44,39 @@ public class WorkArguments {
     private String contractYear;
     private String civilState;
     private String tipoPessoa;
+
+    public String toString() {
+        return FileUtils.removerAcentos("" + signerName + ", " +
+                signerEmail + ", " +
+                companyName + ", " +
+                companyCity + ", " +
+                companyState + ", " +
+                city + ", " +
+                state + ", " +
+                companyAddres + ", " +
+                companyZipCode + ", " +
+                zipCode + ", " +
+                cnpj + ", " +
+                rg + ", " +
+                cpf + ", " +
+                legalRepName + ", " +
+                legalRepCivilState + ", " +
+                legalRepOccupation + ", " +
+                legalRepRG + ", " +
+                legalRepCPF + ", " +
+                legalRepCity + ", " +
+                legalRepState + ", " +
+                legalRepAddress + ", " +
+                legalRepZipCode + ", " +
+                quoteAmount + ", " +
+                consumptionUnit + ", " +
+                buyerName + ", " +
+                buyerAddress + ", " +
+                buyerOccupation + ", " +
+                contractDay + ", " +
+                contractMonth + ", " +
+                contractYear + ", " +
+                civilState + ", " +
+                tipoPessoa);
+    }
 }
