@@ -3,7 +3,6 @@ package br.com.copernico.docusign.core.security.jwt;
 import br.com.copernico.docusign.DSConfiguration;
 import br.com.copernico.docusign.core.exception.LauncherException;
 import com.docusign.esign.client.ApiClient;
-import com.docusign.esign.client.auth.OAuth;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +11,6 @@ import org.springframework.security.oauth2.client.token.grant.redirect.AbstractR
 import org.springframework.util.FileCopyUtils;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 
 @Getter
 @Setter
@@ -40,12 +37,5 @@ public class JWTAuthorizationCodeResourceDetails extends AbstractRedirectResourc
 
     public ApiClient getApiClient() {
         return apiClient;
-    }
-
-    public List<String> getScopeByApiName() {
-//Only signature scope is needed for eSIgnature api. Impersonation scope is implied.
-        return dsConfiguration.getApiName().equalsIgnoreCase("esignature") ?
-                Collections.singletonList(OAuth.Scope_SIGNATURE) :
-                getScope();
     }
 }

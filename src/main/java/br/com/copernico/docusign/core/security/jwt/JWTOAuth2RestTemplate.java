@@ -15,7 +15,6 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 
 
 public class JWTOAuth2RestTemplate extends OAuth2RestTemplate {
@@ -64,7 +63,6 @@ public class JWTOAuth2RestTemplate extends OAuth2RestTemplate {
     private OAuth2AccessToken accessToken() throws LauncherException {
         logger.info("Fetching an access token via JWT grant...");
 // Only signature scope is needed. Impersonation scope is implied.
-        List<String> scopes = resource.getScopeByApiName();
         byte[] privateKeyBytes;
         try {
             privateKeyBytes = resource.getRsaBytes();
@@ -78,14 +76,14 @@ public class JWTOAuth2RestTemplate extends OAuth2RestTemplate {
             oAuthToken = apiClient.requestJWTUserToken(
                     resource.getClientId(),
                     resource.getImpersonatedUserGuid(),
-                    scopes,
+                    null,
                     privateKeyBytes,
                     TOKEN_EXPIRATION_IN_SECONDS);
         } catch (IOException | ApiException e) {
 // Special handling for consent_required
             String message = e.getMessage();
             String consent_url = "";
-            String consent_scopes = String.join(" ", scopes) + " impersonation";
+            String consent_scopes = String.join(" ", "") + " impersonation";
             if (message != null && message.contains("consent_required")) {
                 consent_url = String.format("https://%s/oauth/auth?prompt=login&response_type=code&scope=%s" +
                                 "&client_id=%s" +

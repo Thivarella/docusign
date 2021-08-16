@@ -84,27 +84,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return registration;
     }
 
-    private List<String> getScopes() {
-        List<String> scopes = null;
-        if (this.dsConfiguration.getApiName().equalsIgnoreCase("rooms")) {
-            scopes = Arrays.asList(this.roomScopes);
-        } else if (this.dsConfiguration.getApiName().equalsIgnoreCase("click")) {
-            scopes = Arrays.asList(this.clickScopes);
-        } else if (this.dsConfiguration.getApiName().equalsIgnoreCase("monitor")) {
-            scopes = Arrays.asList(this.monitorScopes);
-        }
-
-        return scopes;
-    }
-
     private OAuth2ClientAuthenticationProcessingFilter authCodeGrantFilter() {
         OAuth2SsoProperties authCodeGrantSso = authCodeGrantSso();
         AuthorizationCodeResourceDetails authCodeGrantClient = authCodeGrantClient();
-
-        List<String> scopes = this.getScopes();
-        if (scopes != null) {
-            authCodeGrantClient.setScope(scopes);
-        }
 
         ResourceServerProperties userInfoResource = userInfoResource();
         OAuth2ClientAuthenticationProcessingFilter filter =
