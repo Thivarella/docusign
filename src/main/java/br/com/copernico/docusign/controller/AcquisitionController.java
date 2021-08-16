@@ -26,6 +26,30 @@ import java.util.Collections;
 @RequestMapping("/acquisition")
 public class AcquisitionController extends AbstractEsignatureController {
 
+    @Value("${second.signer.name}")
+    private String secondSignerName;
+
+    @Value("${second.signer.email}")
+    private String secondSignerEmail;
+
+    @Value("${third.signer.name}")
+    private String thirdSignerName;
+
+    @Value("${third.signer.email}")
+    private String thirdSignerEmail;
+
+    @Value("${fourth.signer.name}")
+    private String fourthSignerName;
+
+    @Value("${fourth.signer.email}")
+    private String fourthSignerEmail;
+
+    @Value("${fifth.signer.name}")
+    private String fifthSignerName;
+
+    @Value("${fifth.signer.email}")
+    private String fifthSignerEmail;
+
     private static final String HTML_DOCUMENT_FILE_NAME_PJ = "templates/Contrato_de_Locacao_e_Adesao_ao_Condominio_Model_CNPJ_.html";
     private static final String HTML_DOCUMENT_FILE_NAME_PF = "templates/Contrato_de_Locacao_e_Adesao_ao_Condominio_Model_PF_.html";
     private static final String HTML_DOCUMENT_NAME = "Contrato de Locação de Quotas e Adesão ao Condomínio";
@@ -48,7 +72,7 @@ public class AcquisitionController extends AbstractEsignatureController {
         this.envelopeHelpers = envelopeHelpers;
     }
 
-    public static EnvelopeDefinition makeEnvelope(WorkArguments args) throws IOException {
+    public EnvelopeDefinition makeEnvelope(WorkArguments args) throws IOException {
 
         Tabs signerTabs = EnvelopeHelpers.createSignerTabs(
                 EnvelopeHelpers.createSignHere("/signature1/", ANCHOR_OFFSET_Y, ANCHOR_OFFSET_X)
@@ -74,29 +98,29 @@ public class AcquisitionController extends AbstractEsignatureController {
         signer.setTabs(signerTabs);
 
         Signer secondSigner = new Signer();
-        secondSigner.setEmail(args.getSignerEmail());
-        secondSigner.setName(args.getSignerName());
+        secondSigner.setEmail(secondSignerEmail);
+        secondSigner.setName(secondSignerName);
         secondSigner.setRecipientId("2");
         secondSigner.setRoutingOrder("2");
         secondSigner.setTabs(secondSignerTabs);
 
         Signer thirdSigner = new Signer();
-        thirdSigner.setEmail(args.getSignerEmail());
-        thirdSigner.setName(args.getSignerName());
+        thirdSigner.setEmail(thirdSignerEmail);
+        thirdSigner.setName(thirdSignerName);
         thirdSigner.setRecipientId("3");
         thirdSigner.setRoutingOrder("3");
         thirdSigner.setTabs(thirdSignerTabs);
 
-        Signer fouthSigner = new Signer();
-        fouthSigner.setEmail(args.getSignerEmail());
-        fouthSigner.setName(args.getSignerName());
-        fouthSigner.setRecipientId("4");
-        fouthSigner.setRoutingOrder("4");
-        fouthSigner.setTabs(fourthSignerTabs);
+        Signer fourthSigner = new Signer();
+        fourthSigner.setEmail(fourthSignerEmail);
+        fourthSigner.setName(fourthSignerName);
+        fourthSigner.setRecipientId("4");
+        fourthSigner.setRoutingOrder("4");
+        fourthSigner.setTabs(fourthSignerTabs);
 
         Signer fifthSigner = new Signer();
-        fifthSigner.setEmail(args.getSignerEmail());
-        fifthSigner.setName(args.getSignerName());
+        fifthSigner.setEmail(fifthSignerEmail);
+        fifthSigner.setName(fifthSignerName);
         fifthSigner.setRecipientId("5");
         fifthSigner.setRoutingOrder("5");
         fifthSigner.setTabs(fifthSignerTabs);
@@ -118,7 +142,7 @@ public class AcquisitionController extends AbstractEsignatureController {
                         DocumentType.HTML.getDefaultFileExtention(), "1")));
         envelope.setRecipients(new Recipients());
         envelope.getRecipients().setCarbonCopies(Collections.singletonList(cc));
-        envelope.getRecipients().setSigners(Arrays.asList(signer, secondSigner, thirdSigner, fouthSigner, fifthSigner));
+        envelope.getRecipients().setSigners(Arrays.asList(signer, secondSigner, thirdSigner, fourthSigner, fifthSigner));
         envelope.setStatus("sent");
 
         return envelope;
