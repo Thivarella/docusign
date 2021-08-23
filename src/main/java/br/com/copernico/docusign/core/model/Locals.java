@@ -9,7 +9,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class Locals {
     private DSConfiguration dsConfig;
-    private Session session;
-    private User user;
     private String messages;
 }

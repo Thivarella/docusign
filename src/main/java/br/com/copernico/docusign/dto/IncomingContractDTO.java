@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.text.DecimalFormat;
+import java.util.Objects;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -102,4 +105,41 @@ public class IncomingContractDTO {
     private String nomeRepresentanteLegal;
     private String ocupacaoRepresentanteLegal;
     private String rgRepresentanteLegal;
+
+    private Boolean checkIfMonthValueAreNull() {
+        return Objects.nonNull(this.monthOne) &&
+                Objects.nonNull(this.monthTwo) &&
+                Objects.nonNull(this.monthThree) &&
+                Objects.nonNull(this.monthFour) &&
+                Objects.nonNull(this.monthFive) &&
+                Objects.nonNull(this.monthSix) &&
+                Objects.nonNull(this.monthSeven) &&
+                Objects.nonNull(this.monthEight) &&
+                Objects.nonNull(this.monthNine) &&
+                Objects.nonNull(this.monthTen) &&
+                Objects.nonNull(this.monthEleven) &&
+                Objects.nonNull(this.monthTwelve);
+    }
+
+    public String calculateQuotes() {
+        DecimalFormat df = new DecimalFormat("#.######");
+
+        float quotes = 0F;
+        if (Boolean.FALSE.equals(this.checkIfMonthValueAreNull()))
+            return df.format(quotes);
+        quotes = Float.parseFloat(this.getMonthOne())
+                + Float.parseFloat(this.getMonthTwo())
+                + Float.parseFloat(this.getMonthThree())
+                + Float.parseFloat(this.getMonthFour())
+                + Float.parseFloat(this.getMonthFive())
+                + Float.parseFloat(this.getMonthSix())
+                + Float.parseFloat(this.getMonthSeven())
+                + Float.parseFloat(this.getMonthEight())
+                + Float.parseFloat(this.getMonthNine())
+                + Float.parseFloat(this.getMonthTen())
+                + Float.parseFloat(this.getMonthEleven())
+                + Float.parseFloat(this.getMonthTwelve());
+
+        return String.valueOf(df.format(((quotes / 12) / 6699490 * 12) * 100));
+    }
 }

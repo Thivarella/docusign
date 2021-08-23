@@ -7,23 +7,24 @@ import br.com.copernico.docusign.core.controller.eSignature.EnvelopeHelpers;
 import br.com.copernico.docusign.core.utils.CsvGenerator;
 import br.com.copernico.docusign.dto.IncomingContractDTO;
 import com.docusign.esign.model.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
 public class AcquisitionService {
-    private static final String HTML_DOCUMENT_FILE_NAME_PJ = "templates/Contrato_de_Locacao_e_Adesao_ao_Condominio_Model_CNPJ_.html";
-    private static final String HTML_DOCUMENT_FILE_NAME_PF = "templates/Contrato_de_Locacao_e_Adesao_ao_Condominio_Model_PF_.html";
-    private static final String HTML_DOCUMENT_NAME = "Contrato de Locação de Quotas e Adesão ao Condomínio";
-    private static final int ANCHOR_OFFSET_Y = 15;
-    private static final int ANCHOR_OFFSET_X = 0;
+    private static final String HTML_DOCUMENT_FILE_NAME_PJ = "templates/Contrato_de_Locacao_e_Adesao_ao_Condominio_Model_CNPJ.html";
+    private static final String HTML_DOCUMENT_FILE_NAME_PF = "templates/Contrato_de_Locacao_e_Adesao_ao_Condominio_Model_PF.html";
+    private static final String HTML_DOCUMENT_NAME = "Contrato de Adesão a Usina Solar Fotovoltaica e Outras Avenças";
+    private static final int ANCHOR_OFFSET_Y = 6;
+    private static final int ANCHOR_OFFSET_X = 1;
     @Value("${second.signer.name}")
     private String secondSignerName;
     @Value("${second.signer.email}")
@@ -41,6 +42,16 @@ public class AcquisitionService {
     @Value("${fifth.signer.email}")
     private String fifthSignerEmail;
 
+    @Value("${first.carbon.copy.name}")
+    private String firstCcName;
+    @Value("${first.carbon.copy.email}")
+    private String firstCcEmail;
+
+    @Value("${second.carbon.copy.name}")
+    private String secondCcName;
+    @Value("${second.carbon.copy.email}")
+    private String secondCcEmail;
+
     public WorkArguments convertDTOToWorkArguments(IncomingContractDTO incomingContractDTO) throws IOException {
         LocalDate localDate = LocalDate.now();
         String name = "J".equals(incomingContractDTO.getTipoPessoa())
@@ -49,19 +60,13 @@ public class AcquisitionService {
         String job = "J".equals(incomingContractDTO.getTipoPessoa())
                 ? incomingContractDTO.getOcupacaoRepresentanteLegal()
                 : incomingContractDTO.getJob();
-        String buyerAddress = "J".equals(incomingContractDTO.getTipoPessoa())
-                ? incomingContractDTO
-                .getEnderecoRepresentanteLegal()
-                .concat(" - ")
-                .concat(incomingContractDTO.getComplementoRepresentanteLegal())
-                .concat(" - ")
-                .concat(incomingContractDTO.getCepRepresentanteLegal())
-                : incomingContractDTO
-                .getAddress()
-                .concat(" - ")
-                .concat(incomingContractDTO.getComplement())
-                .concat(" - ")
-                .concat(incomingContractDTO.getZipCode());
+        String buyerAddress = "J".equals(incomingContractDTO.getTipoPessoa()) ?
+                Objects.nonNull(incomingContractDTO.getComplement()) && !StringUtils.isEmpty(incomingContractDTO.getComplementoRepresentanteLegal().trim())
+                        ? incomingContractDTO.getEnderecoRepresentanteLegal().concat(" - ").concat(incomingContractDTO.getComplementoRepresentanteLegal())
+                        : incomingContractDTO.getEnderecoRepresentanteLegal()
+                : Objects.nonNull(incomingContractDTO.getComplement()) && !StringUtils.isEmpty(incomingContractDTO.getComplement().trim())
+                ? incomingContractDTO.getAddress().concat(" - ").concat(incomingContractDTO.getComplement())
+                : incomingContractDTO.getAddress();
 
         String estadoCivil = "J".equals(incomingContractDTO.getTipoPessoa())
                 ? incomingContractDTO
@@ -75,24 +80,22 @@ public class AcquisitionService {
         workArguments.setBuyerAddress(buyerAddress);
         workArguments.setBuyerOccupation(job);
         workArguments.setContractDay(String.valueOf(localDate.getDayOfMonth()));
-        workArguments.setContractMonth(String.valueOf(localDate.getMonth()));
+        workArguments.setContractMonth(convertToBrazilianMonth(localDate.getMonthValue()));
         workArguments.setContractYear(String.valueOf(localDate.getYear()));
         workArguments.setBuyerAddress(buyerAddress);
 
         if ("J".equals(incomingContractDTO.getTipoPessoa())) {
-            String companyAddress = incomingContractDTO
-                    .getAddress()
-                    .concat(" - ")
-                    .concat(incomingContractDTO.getComplement())
-                    .concat(" - ")
-                    .concat(incomingContractDTO.getZipCode());
+            String companyAddress = Objects.nonNull(incomingContractDTO.getComplement())
+                    && !StringUtils.isEmpty(incomingContractDTO.getComplement().trim()) ?
+                    incomingContractDTO.getAddress().concat(" - ").concat(incomingContractDTO.getComplement()) :
+                    incomingContractDTO.getAddress();
 
             workArguments.setCnpj(incomingContractDTO.getCnpj());
             workArguments.setCompanyAddres(companyAddress);
             workArguments.setCompanyCity(incomingContractDTO.getCity());
             workArguments.setCompanyState(incomingContractDTO.getState());
             workArguments.setCompanyZipCode(incomingContractDTO.getZipCode());
-            workArguments.setCompanyName(incomingContractDTO.getName());
+            workArguments.setCompanyName(incomingContractDTO.getSocialReason());
             workArguments.setConsumptionUnit(companyAddress);
             workArguments.setLegalRepAddress(buyerAddress);
             workArguments.setLegalRepCity(incomingContractDTO.getCidadeRepresentanteLegal());
@@ -114,28 +117,41 @@ public class AcquisitionService {
         }
 
         workArguments.setTipoPessoa(incomingContractDTO.getTipoPessoa());
-        workArguments.setQuoteAmount(calculateQuotes(incomingContractDTO));
+        workArguments.setQuoteAmount(incomingContractDTO.calculateQuotes());
 
         CsvGenerator.createCsv(new WorkArguments(), Stream.of(workArguments).map(WorkArguments::toString).collect(Collectors.toList()));
         return workArguments;
     }
 
-    private String calculateQuotes(IncomingContractDTO incomingContractDTO) {
-        Float quotes = 0F;
-        quotes += Float.parseFloat(incomingContractDTO.getMonthOne());
-        quotes += Float.parseFloat(incomingContractDTO.getMonthTwo());
-        quotes += Float.parseFloat(incomingContractDTO.getMonthThree());
-        quotes += Float.parseFloat(incomingContractDTO.getMonthFour());
-        quotes += Float.parseFloat(incomingContractDTO.getMonthFive());
-        quotes += Float.parseFloat(incomingContractDTO.getMonthSix());
-        quotes += Float.parseFloat(incomingContractDTO.getMonthSeven());
-        quotes += Float.parseFloat(incomingContractDTO.getMonthEight());
-        quotes += Float.parseFloat(incomingContractDTO.getMonthNine());
-        quotes += Float.parseFloat(incomingContractDTO.getMonthTen());
-        quotes += Float.parseFloat(incomingContractDTO.getMonthEleven());
-        quotes += Float.parseFloat(incomingContractDTO.getMonthTwelve());
-
-        return String.valueOf(quotes / 6699490 * 120);
+    private String convertToBrazilianMonth(int monthValue) {
+        switch (monthValue) {
+            case 1:
+                return "Janeiro";
+            case 2:
+                return "Fevereiro";
+            case 3:
+                return "Março";
+            case 4:
+                return "Abril";
+            case 5:
+                return "Maio";
+            case 6:
+                return "Junho";
+            case 7:
+                return "Julho";
+            case 8:
+                return "Agosto";
+            case 9:
+                return "Setembro";
+            case 10:
+                return "Outubro";
+            case 11:
+                return "Novembro";
+            case 12:
+                return "Dezembro";
+            default:
+                return "";
+        }
     }
 
     public EnvelopeDefinition makeEnvelope(WorkArguments args) throws IOException {
@@ -159,22 +175,22 @@ public class AcquisitionService {
         Signer signer = new Signer();
         signer.setEmail(args.getSignerEmail());
         signer.setName(args.getSignerName());
-        signer.setRecipientId("1");
-        signer.setRoutingOrder("1");
+        signer.setRecipientId("2");
+        signer.setRoutingOrder("2");
         signer.setTabs(signerTabs);
 
         Signer secondSigner = new Signer();
         secondSigner.setEmail(secondSignerEmail);
         secondSigner.setName(secondSignerName);
-        secondSigner.setRecipientId("2");
-        secondSigner.setRoutingOrder("2");
+        secondSigner.setRecipientId("3");
+        secondSigner.setRoutingOrder("3");
         secondSigner.setTabs(secondSignerTabs);
 
         Signer thirdSigner = new Signer();
         thirdSigner.setEmail(thirdSignerEmail);
         thirdSigner.setName(thirdSignerName);
-        thirdSigner.setRecipientId("3");
-        thirdSigner.setRoutingOrder("3");
+        thirdSigner.setRecipientId("1");
+        thirdSigner.setRoutingOrder("1");
         thirdSigner.setTabs(thirdSignerTabs);
 
         Signer fourthSigner = new Signer();
@@ -191,23 +207,27 @@ public class AcquisitionService {
         fifthSigner.setRoutingOrder("5");
         fifthSigner.setTabs(fifthSignerTabs);
 
-        // create a cc recipient to receive a copy of the documents, identified by name and email
-        CarbonCopy cc = new CarbonCopy();
-        cc.setEmail(args.getSignerEmail());
-        cc.setName(args.getSignerName());
-        cc.setRecipientId("6");
-        cc.setRoutingOrder("6");
+        CarbonCopy firstCc = new CarbonCopy();
+        firstCc.setEmail(firstCcEmail);
+        firstCc.setName(firstCcName);
+        firstCc.setRecipientId("6");
+        firstCc.setRoutingOrder("6");
 
+        CarbonCopy secondCc = new CarbonCopy();
+        secondCc.setEmail(secondCcEmail);
+        secondCc.setName(secondCcName);
+        secondCc.setRecipientId("7");
+        secondCc.setRoutingOrder("7");
 
         byte[] htmlDocument = EnvelopeHelpers.createHtmlFromTemplateFile("J".equals(args.getTipoPessoa()) ?
                 HTML_DOCUMENT_FILE_NAME_PJ : HTML_DOCUMENT_FILE_NAME_PF, "args", args);
         EnvelopeDefinition envelope = new EnvelopeDefinition();
-        envelope.setEmailSubject("Please sign this document set");
+        envelope.setEmailSubject("Bem vindo! Assine seu contrato com a Copérnico");
         envelope.setDocuments(Arrays.asList(
                 EnvelopeHelpers.createDocument(htmlDocument, HTML_DOCUMENT_NAME,
                         DocumentType.HTML.getDefaultFileExtention(), "1")));
         envelope.setRecipients(new Recipients());
-        envelope.getRecipients().setCarbonCopies(Collections.singletonList(cc));
+        envelope.getRecipients().setCarbonCopies(Arrays.asList(firstCc, secondCc));
         envelope.getRecipients().setSigners(Arrays.asList(signer, secondSigner, thirdSigner, fourthSigner, fifthSigner));
         envelope.setStatus("sent");
 
