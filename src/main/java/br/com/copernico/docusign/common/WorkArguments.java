@@ -39,6 +39,7 @@ public class WorkArguments {
     private String buyerName;
     private String buyerAddress;
     private String buyerOccupation;
+    private String buyerZipCode;
     private String contractDay;
     private String contractMonth;
     private String contractYear;
@@ -73,6 +74,7 @@ public class WorkArguments {
                 buyerName + ", " +
                 buyerAddress + ", " +
                 buyerOccupation + ", " +
+                buyerZipCode + ", " +
                 contractDay + ", " +
                 contractMonth + ", " +
                 contractYear + ", " +
